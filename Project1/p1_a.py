@@ -26,7 +26,6 @@ def design_matrix(x, y, p):
         q = int(i*(i + 1)/2)
         for k in range(i + 1):
             X[:, q + k] = (x**(i - k)) * (y**k)
-
     return X
 
 def OLS(X, z):
@@ -39,48 +38,56 @@ def ridge(lmbda, X, z, p):
     beta_ridge = np.linalg.pinv(X.T @ X + np.identity(10)*lmbda) @ (X.T @ z)
     return beta_ridge
 
-def mean_beta(beta):
-    n = np.shape(beta)[0]
-    mean = np.zeros(n)
-    for i in range(n):
-        mean[i] = np.mean(beta[i])
-    return mean
-
 def variance_beta(beta, X, noise):
     var_beta = np.diag(np.var(noise) * np.linalg.pinv(X.T @ X))
     return var_beta
 
+def MSE(z, ztilde):
+    MSE = np.sum((z - ztilde)**2)/len(z)
+    return MSE
+
+def R2Score(z, ztilde):
+    R2Score = 1 - np.sum((z - ztilde)**2)/np.sum((z - np.mean(z))**2)
+    return R2Score
+
 
 # Make data
-n = 100
+n = 5
+print(f"n = {n}")
+np.random.seed(101)
 x = np.sort(np.random.uniform(0, 1, n))
 y = np.sort(np.random.uniform(0, 1, n))
 x, y = np.meshgrid(x, y)
 
 #Create design matrix
-p = 5
+p = 10
+print(f"p = {p}")
 X = design_matrix(x, y, p)
 
 # Franke Function
-noise = 10*np.random.randn(n, n)
+noise = 0.8*np.random.randn(n, n)
 z = np.ravel(FrankeFunction(x, y) + noise)
 
 # Ordinary least squares
 beta_OLS = OLS(X, z)
 ztilde = X @ beta_OLS
-ztilde = np.reshape(ztilde, (n, n))
 
 # Confidence interval as function of beta
 var_beta = variance_beta(beta_OLS, X, noise)
 err_beta = 1.96*np.sqrt(var_beta/len(beta_OLS))     # 95% confidence interval
 
+# Plot of confidence interval
 plt.errorbar(np.linspace(1, len(beta_OLS), len(beta_OLS)), beta_OLS, err_beta, fmt='.')
-plt.show()
+plt.title("95 % confidence interval as function of $\\beta$")
+# plt.show()
 
+# Mean squared error
+MSE_OLS = MSE(z, ztilde)
+print(f"MSE OLS: {MSE_OLS:.3}")
 
-
-
-
+# R^2 score
+R2Score_OLS = R2Score(z, ztilde)
+print(f"R^2 Score OLS: {R2Score_OLS:.3}")
 
 
 
@@ -90,7 +97,8 @@ fig = plt.figure()
 ax = fig.gca(projection='3d')
 
 # Plot the surface
-surf = ax.plot_surface(x, y, ztilde, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+ztilde_plot = np.reshape(ztilde, (n, n))
+surf = ax.plot_surface(x, y, ztilde_plot, cmap=cm.coolwarm, linewidth=0, antialiased=False)
 
 # Customize the z axis
 ax.set_zlim(-0.10, 1.40)
