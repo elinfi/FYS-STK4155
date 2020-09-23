@@ -9,7 +9,7 @@ def FrankeFunction(x,y):
         term4 = -0.2*np.exp(-(9*x-4)**2 - (9*y-7)**2)
         return term1 + term2 + term3 + term4
 
-@jit
+# @jit
 def design_matrix(x, y, p):
     # make sure x and y  are 1D
     if (len(x.shape)) > 1:
@@ -30,11 +30,13 @@ def OLS(X, z):
     beta = np.linalg.pinv(X.T @ X) @ (X.T @ z)
     return beta
 
-def Ridge(lmbda, X, z, p):
-    # Ridge regression
-    l = int((p + 1)*(p + 2)/2)
-    beta_ridge = np.linalg.pinv(X.T @ X + np.identity(10)*lmbda) @ (X.T @ z)
+def Ridge(X, z, lmbda, degree):
+    # number of combinations of x and y
+    l = int((degree + 1)*(degree + 2)/2)
+    beta_ridge = np.linalg.pinv(X.T @ X + np.identity(l)*lmbda) @ (X.T @ z)
     return beta_ridge
+
+# def Lasso()
 
 def bootstrap(n_bootstrap, X_train, X_test, z_test, z_train, method):
     z_tilde_bootstrap = np.zeros((np.shape(z_test)[0], n_bootstrap))
@@ -45,7 +47,7 @@ def bootstrap(n_bootstrap, X_train, X_test, z_test, z_train, method):
     return z_tilde_bootstrap
 
 def variance_beta(beta, X, noise):
-    var_beta = np.diag(np.var(noise) * np.linalg.pinv(X.T @ X))
+    var_beta = 0.8*np.diag(np.linalg.pinv(X.T @ X))
     return var_beta
 
 def MSE(z, ztilde):
