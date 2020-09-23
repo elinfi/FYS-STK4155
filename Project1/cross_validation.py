@@ -9,13 +9,13 @@ from functions import FrankeFunction, design_matrix
 
 
 
-def cross_validation(n, maxdegree, noise, n_folds, method):
+def cross_validation(n, maxdegree, noise, n_folds, method, seed):
     polydegree = np.zeros(maxdegree)
     MSE_mean = np.zeros(maxdegree)
 
     # Make data
     print(f"n = {n}")
-    np.random.seed(101)
+    np.random.seed(seed)
     x = np.sort(np.random.uniform(0, 1, n))
     y = np.sort(np.random.uniform(0, 1, n))
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2)
@@ -26,7 +26,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method):
     z_train = np.ravel(FrankeFunction(x_train, y_train) + noise*np.random.randn(x_train.shape[0], x_train.shape[0]))
     z_test = np.ravel(FrankeFunction(x_test, y_test) + noise*np.random.randn(np.shape(x_test)[0], np.shape(x_test)[0]))
 
-    for degree in range(maxdegree):
+    for degree in range(1, maxdegree):
         polydegree[degree] = degree
 
         # Create design matrix
@@ -45,7 +45,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method):
         # Shuffle data to get random folds
         index = np.arange(0, np.shape(X_train_scaled)[0], 1)
         np.random.shuffle(index)
-        X_train_scaled_random = X_train_scaled[index]
+        X_train_scaled_random = X_train_scaled[index,:]
         z_train_random = z_train[index]
 
         # Split data in n_folds folds
@@ -62,14 +62,13 @@ def cross_validation(n, maxdegree, noise, n_folds, method):
             idx = np.ones(n_folds, dtype=bool)
             idx[k] = False
             X_train_fold = X_folds[idx]
+
             X_train_fold = np.reshape(X_train_fold, (X_train_fold.shape[0]*X_train_fold.shape[1], X_train_fold.shape[2]))
             z_train_fold = np.ravel(z_folds[idx])
 
-
             beta_fold = method(X_train_fold, z_train_fold)
             z_tilde_fold = X_val @ beta_fold
-            MSE_mean[degree] = MSE(z_val, z_tilde_fold)
-            print(MSE_mean[degree])
+            MSE_mean[degree] += MSE(z_val, z_tilde_fold)
         MSE_mean[degree] /= n_folds
 
     best_degree = list(MSE_mean).index(np.min(MSE_mean))
@@ -98,10 +97,12 @@ def cross_validation(n, maxdegree, noise, n_folds, method):
 if __name__ == '__main__':
     # initial data
     n = 50            # number of data points
-    maxdegree = 30
+    maxdegree = 3
     noise = 0.1
-    n_folds = 5               # number of folds
+    n_folds = 3             # number of folds
+    method = OLS
+    seed = 130
 
-    polydegree, MSE_mean, MSE_best = cross_validation(n, maxdegree, noise, n_folds, method)
+    polydegree, MSE_mean, MSE_best = cross_validation(n, maxdegree, noise, n_folds, method, seed)
     plt.plot(polydegree, MSE_mean)
     plt.show()
