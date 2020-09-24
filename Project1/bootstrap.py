@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sklearn.linear_model as skl
 from sklearn.utils import resample
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
@@ -8,7 +9,8 @@ from functions import OLS, Ridge, variance_beta
 from functions import FrankeFunction, design_matrix
 
 def bootstrap(n, maxdegree, n_bootstrap, noise, method, lmbda, seed):
-    MSE_bootstrap = np.zeros(maxdegree)
+    MSE_bootstrap_test = np.zeros(maxdegree)
+    MSE_bootstrap_train = np.zeros(maxdegree)
     bias_bootstrap = np.zeros(maxdegree)
     variance_bootstrap = np.zeros(maxdegree)
     polydegree = np.zeros(maxdegree)
@@ -45,41 +47,52 @@ def bootstrap(n, maxdegree, n_bootstrap, noise, method, lmbda, seed):
         X_test_scaled[:, 0] = 1
 
         # Bootstrap
-        z_tilde_bootstrap = np.zeros((np.shape(z_test)[0], n_bootstrap))
-        index = np.arange(0, n, 1)
+        z_tilde_test = np.zeros((np.shape(z_test)[0], n_bootstrap))
+        z_tilde_train = np.zeros((np.shape(z_train)[0], n_bootstrap))
+        index = np.arange(0, X_train.shape[0], 1)
         for b in range(n_bootstrap):
             idx_ = resample(index)
-            z_ = z_train[idx_]
+            z_train_ = z_train[idx_]
             X_train_scaled_ = X_train_scaled[idx_, :]
 
             if method == OLS:
-                beta_bootstrap = method(X_train_scaled_, z_)
+                beta_bootstrap = method(X_train_scaled_, z_train_)
+                z_tilde_test[:, b] = np.ravel(X_test_scaled @ beta_bootstrap)
+                z_tilde_train[:, b] = np.ravel(X_train_scaled @ beta_bootstrap)
+
             elif method == Ridge:
-                beta_bootstrap = method(X_train_scaled_, z_, lmbda, degree)
+                beta_bootstrap = method(X_train_scaled_, z_train_, lmbda, degree)
+                z_tilde_test[:, b] = np.ravel(X_test_scaled @ beta_bootstrap)
+                z_tilde_train[:, b] = np.ravel(X_train_scaled @ beta_bootstrap)
 
-            z_tilde_bootstrap[:, b] = np.ravel(X_test_scaled @ beta_bootstrap)
+            elif method == 'Lasso':
+                clf_lasso = skl.Lasso(alpha = lmbda).fit(X_train_scaled, z_train_)
+                z_tilde_test[:, b] = clf_lasso.predict(X_test_scaled)
+                z_tilde_train[:, b] = clf_lasso.predict(X_train_scaled)
 
-        MSE_bootstrap[degree] = np.mean(np.mean((z_test - z_tilde_bootstrap)**2, axis=1, keepdims=True))
-        bias_bootstrap[degree] = np.mean((z_test - np.mean(z_tilde_bootstrap, axis=1, keepdims=True))**2)
-        variance_bootstrap[degree] = np.mean( np.var(z_tilde_bootstrap, axis=1, keepdims=True))
+        MSE_bootstrap_test[degree] = np.mean(np.mean((z_test - z_tilde_test)**2, axis=1, keepdims=True))
+        MSE_bootstrap_train[degree] = np.mean(np.mean((z_train - z_tilde_train)**2, axis=1, keepdims=True))
+        bias_bootstrap[degree] = np.mean((z_test - np.mean(z_tilde_test, axis=1, keepdims=True))**2)
+        variance_bootstrap[degree] = np.mean( np.var(z_tilde_test, axis=1, keepdims=True))
 
-    return polydegree, MSE_bootstrap, bias_bootstrap, variance_bootstrap
+    return polydegree, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap
 
 if __name__ == '__main__':
     # initial data
-    n = 100
-    maxdegree = 8
-    n_bootstrap = 100
+    n = 50
+    maxdegree = 20
+    n_bootstrap = 10
     noise = 0.1
     method = OLS
     lmbda = 0
-    seed = 1234
+    seed = 130
 
-    polydegree, MSE_bootstrap, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, lmbda, seed)
+    polydegree, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, lmbda, seed)
 
-    plt.plot(polydegree, MSE_bootstrap, label='MSE')
-    plt.plot(polydegree, bias_bootstrap, '--', label='bias')
-    plt.plot(polydegree, variance_bootstrap, label='variance')
+    plt.plot(polydegree, MSE_bootstrap_test, label='MSE test')
+    plt.plot(polydegree, MSE_bootstrap_train, label='MSE train')
+    # plt.plot(polydegree, bias_bootstrap, label='bias')
+    # plt.plot(polydegree, variance_bootstrap, label='variance')
     plt.xlabel("Model complexity")
     plt.ylabel("bias-variance trade-off")
     plt.legend()
