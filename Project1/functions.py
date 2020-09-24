@@ -33,7 +33,7 @@ def OLS(X, z):
 def Ridge(X, z, lmbda, degree):
     # number of combinations of x and y
     l = int((degree + 1)*(degree + 2)/2)
-    beta_ridge = np.linalg.pinv(X.T @ X + np.identity(l)*lmbda) @ (X.T @ z)
+    beta_ridge = np.linalg.inv(X.T @ X + np.identity(l)*lmbda) @ (X.T @ z)
     return beta_ridge
 
 # def Lasso()
@@ -51,7 +51,7 @@ def variance_beta(beta, X, noise):
     return var_beta
 
 def MSE(z, ztilde):
-    MSE = np.sum((z - ztilde)**2)/len(z)
+    MSE = np.mean((z - ztilde)**2)
     return MSE
 
 def R2Score(z, ztilde):
