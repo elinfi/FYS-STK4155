@@ -75,10 +75,14 @@ def cross_validation(n, maxdegree, noise, n_folds, method, lmbda, seed):
             # Choose method for calculating coefficients beta
             if method == OLS:
                 beta_fold = method(X_train_fold, z_train_fold)
+                z_tilde_fold_test = X_val @ beta_fold
+                # z_tilde_fold_train = X_train_
             elif method == Ridge:
                 beta_fold = method(X_train_fold, z_train_fold, lmbda, degree)
-
-            z_tilde_fold = X_val @ beta_fold
+                z_tilde_fold = X_val @ beta_fold
+            elif method == 'Lasso':
+                clf_lasso = skl.Lasso(alpha = lmbda).fit(X_train_fold, z_train_fold)
+                z_tilde_fold = clf_lasso.predict(X_val)
 
             MSE_mean[degree] += MSE(z_val, z_tilde_fold)
             R2Score_mean[degree] += R2Score(z_val, z_tilde_fold)
@@ -112,9 +116,9 @@ def cross_validation(n, maxdegree, noise, n_folds, method, lmbda, seed):
 
 if __name__ == '__main__':
     # initial data
-    n = 50            # number of data points
+    n = 180            # number of data points
     maxdegree = 15
-    noise = 0.1
+    noise = 0.01
     n_folds = 5             # number of folds
     method = OLS
     lmbda = 0
