@@ -73,7 +73,7 @@ for degree in range(0, maxdegree):
     ztilde_train = X_train @ beta_OLS_train
 
     # Confidence interval as function of beta
-    var_beta = variance_beta(beta_OLS_train, X_test, noise)
+    var_beta = variance_beta(X_test, noise)
     err_beta = 1.96*np.sqrt(var_beta)           # 95% confidence interval
 
     # Plot of confidence interval
@@ -112,10 +112,10 @@ plt.show()
 
 plt.plot(polydegree, MSE_OLS_test, label='test')
 plt.plot(polydegree, MSE_OLS_train, label='train')
-# plt.xlabel("Model COmplexity")
-# plt.ylabel("MSE")
-# plt.legend()
-# plt.show()
+plt.xlabel("Model COmplexity")
+plt.ylabel("MSE")
+plt.legend()
+plt.show()
 
 plt.plot(polydegree, MSE_OLS_test_scaled, label='test scaled')
 plt.plot(polydegree, MSE_OLS_train_scaled, label='train scaled')

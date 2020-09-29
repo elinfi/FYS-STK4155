@@ -14,8 +14,8 @@ method = OLS
 lmbda = 0
 seed = 133
 
-polydegree_cv, MSE_mean, MSE_best, R2Score_skl, R2Score_mean = cross_validation(n, maxdegree, noise, n_folds, method, lmbda, seed)
-polydegree_b, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, lmbda, seed)
+polydegree_cv, MSE_mean, MSE_best, R2Score_skl, R2Score_mean = cross_validation(n, maxdegree, noise, n_folds, method, seed, lmbda)
+polydegree_b, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, seed)
 
 plt.plot(polydegree_cv, MSE_mean, label='cross validation')
 plt.plot(polydegree_b, MSE_bootstrap_test, label='bootstrap')
