@@ -110,7 +110,7 @@ def Ridge(X, z, lmbda, degree):
     return beta_ridge
 
 def variance_beta(X, noise):
-    var_beta = noise*np.diag(np.linalg.pinv(X.T @ X))
+    var_beta = np.diag(np.linalg.pinv(X.T @ X))
     return var_beta
 
 def MSE(z, ztilde):

@@ -69,7 +69,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
         for k in range(n_folds):
             # Validation data
             X_val = X_folds[k]
-            z_val = z_folds[k]
+            z_val = np.reshape(z_folds[k], (-1, 1))
 
             # Training data
             idx = np.ones(n_folds, dtype=bool)
@@ -78,31 +78,35 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
             # Combine folds
             X_train_fold = np.reshape(X_train_fold, (X_train_fold.shape[0]*X_train_fold.shape[1], X_train_fold.shape[2]))
-            z_train_fold = np.ravel(z_folds[idx])
+            z_train_fold = np.reshape(np.ravel(z_folds[idx]), (-1, 1))
 
             # Scaling data
             scaler = StandardScaler()                               # removes the mean and scales each feature/variable to unit variance
             scaler.fit(X_train_fold)                                # compute the mean and std to be used for later scaling
             X_train_fold_scaled = scaler.transform(X_train_fold)    # perform standardization by centering and scaling
             X_val_scaled = scaler.transform(X_val)
-
+            # Set first column to one as StandardScaler sets it to zero
             X_train_fold_scaled[:, 0] = 1
             X_val_scaled[:, 0] = 1
 
+            scaler.fit(z_train_fold)
+            z_train_fold_scaled = scaler.transform(z_train_fold)
+            z_val_scaled = scaler.transform(z_val)
+
             # Choose method for calculating coefficients beta
             if method == f.OLS:
-                beta_fold = method(X_train_fold_scaled, z_train_fold)
+                beta_fold = method(X_train_fold_scaled, z_train_fold_scaled)
                 z_tilde_fold = X_val_scaled @ beta_fold
                 # z_tilde_fold_train = X_train_
             elif method == f.Ridge:
-                beta_fold = method(X_train_fold_scaled, z_train_fold, lmbda, degree)
+                beta_fold = method(X_train_fold_scaled, z_train_fold_scaled, lmbda, degree)
                 z_tilde_fold = X_val_scaled @ beta_fold
             elif method == 'Lasso':
-                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=False).fit(X_train_fold_scaled, z_train_fold)
+                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=False).fit(X_train_fold_scaled, z_train_fold_scaled)
                 z_tilde_fold = clf_lasso.predict(X_val_scaled)
 
-            MSE_mean[degree] += f.MSE(z_val, z_tilde_fold)
-            R2Score_mean[degree] += f.R2Score(z_val, z_tilde_fold)
+            MSE_mean[degree] += f.MSE(z_val_scaled, z_tilde_fold)
+            R2Score_mean[degree] += f.R2Score(z_val_scaled, z_tilde_fold)
 
         MSE_mean[degree] /= n_folds
         R2Score_mean[degree] /= n_folds
@@ -122,9 +126,16 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
     X_test_best = f.design_matrix(x_test, y_test, best_degree)
     X_test_best_scaled = scaler.transform(X_test_best)
 
-    beta_best = f.OLS(X_train_best_scaled, z_train)
+    X_train_best_scaled[:, 0] = 1
+    X_test_best_scaled[:, 0] = 1
+
+    scaler.fit(z_train.reshape(-1, 1))
+    z_train_scaled = scaler.transform(z_train.reshape(-1, 1))
+    z_test_scaled = scaler.transform(z_test.reshape(-1, 1))
+
+    beta_best = f.OLS(X_train_best_scaled, z_train_scaled)
     z_tilde_best = X_test_best_scaled @ beta_best
-    MSE_best = f.MSE(z_test, z_tilde_best)
+    MSE_best = f.MSE(z_test_scaled, z_tilde_best)
     print(MSE_best)
 
 

@@ -11,7 +11,7 @@ from functions import FrankeFunction, design_matrix
 
 # initial data
 n = 20
-maxdegree = 14
+maxdegree = 5
 noise = 0.1
 
 # arrays for plotting of error
@@ -62,13 +62,16 @@ for degree in range(0, maxdegree):
     scaler.fit(X_train)                         # compute the mean and std to be used for later scaling
     X_train_scaled = scaler.transform(X_train)  # perform standardization by centering and scaling
     X_test_scaled = scaler.transform(X_test)    # fit to data, then transform it
+    scaler.fit(z_train)
+    z_train_scaled = scaler.transform(z_train)
+    z_test_scaled = scaler.transform(z_test)
 
     # Set the first column to 1 since StandardScaler sets it to 0
     X_train_scaled[:, 0] = 1
     X_test_scaled[:, 0] = 1
 
     # Ordinary linear square estimate train/test
-    beta_OLS_train = OLS(X_train, z_train)
+    beta_OLS_train = OLS(X_train, z_train_scaled)
     ztilde_test = X_test @ beta_OLS_train
     ztilde_train = X_train @ beta_OLS_train
 
@@ -77,23 +80,26 @@ for degree in range(0, maxdegree):
     err_beta = 1.96*np.sqrt(var_beta)           # 95% confidence interval
 
     # Plot of confidence interval
-    # plt.errorbar(np.linspace(1, len(beta_OLS), len(beta_OLS)), beta_OLS, err_beta, fmt='.')
-    # plt.title("95 % confidence interval as function of $\\beta$")
-    # plt.show()
+    plt.style.use('ggplot')
+    plt.errorbar(np.linspace(0, len(beta_OLS)-1, len(beta_OLS)), beta_OLS, err_beta, fmt='.')
+    plt.xlabel("n", size=12)
+    plt.ylabel('Confidence interval', size=12)
+    plt.title("95 % confidence interval as function of $\\beta$", size=16)
+    plt.show()
 
-    MSE_OLS_train[degree] = MSE(z_train, ztilde_train)
-    MSE_OLS_test[degree] = MSE(z_test, ztilde_test)
+    MSE_OLS_train[degree] = MSE(z_train_scaled, ztilde_train)
+    MSE_OLS_test[degree] = MSE(z_test_scaled, ztilde_test)
 
     # Ordinary linear squared estimate with scaling
     print(np.shape(X_train_scaled))
-    print(np.shape(z_train))
-    beta_OLS_train_scaled = OLS(X_train_scaled, z_train)
+    print(np.shape(z_train_scaled))
+    beta_OLS_train_scaled = OLS(X_train_scaled, z_train_scaled)
     ztilde_test_scaled = X_test_scaled @ beta_OLS_train_scaled
     ztilde_train_scaled = X_train_scaled @ beta_OLS_train_scaled
 
-    MSE_OLS_train_scaled[degree] = MSE(z_train, ztilde_train_scaled)
-    MSE_OLS_test_scaled[degree] = MSE(z_test, ztilde_test_scaled)
-    R2Score_OLS_scaled[degree] = R2Score(z_test, ztilde_test_scaled)
+    MSE_OLS_train_scaled[degree] = MSE(z_train_scaled, ztilde_train_scaled)
+    MSE_OLS_test_scaled[degree] = MSE(z_test_scaled, ztilde_test_scaled)
+    R2Score_OLS_scaled[degree] = R2Score(z_test_scaled, ztilde_test_scaled)
 
     # print(f"MSE train: {MSE_OLS_train_scaled[degree]:.3}")
     # print(f"MSE test: {MSE_OLS_test_scaled[degree]:.3}")
@@ -108,21 +114,21 @@ plt.plot(polydegree, R2Score_OLS_scaled, label='R2Score scaled')
 plt.xlabel("Model complexity")
 plt.ylabel("Error")
 plt.legend()
-plt.show()
+plt.close()
 
 plt.plot(polydegree, MSE_OLS_test, label='test')
 plt.plot(polydegree, MSE_OLS_train, label='train')
 plt.xlabel("Model COmplexity")
 plt.ylabel("MSE")
 plt.legend()
-plt.show()
+plt.close()
 
 plt.plot(polydegree, MSE_OLS_test_scaled, label='test scaled')
 plt.plot(polydegree, MSE_OLS_train_scaled, label='train scaled')
 plt.xlabel("Model Complexity")
 plt.ylabel("MSE")
 plt.legend()
-plt.show()
+plt.close()
 
 # Start figure
 fig = plt.figure()
