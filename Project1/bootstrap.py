@@ -19,11 +19,10 @@ def bootstrap(n, maxdegree, n_bootstrap, noise, method, seed=130, datatype='Fran
     np.random.seed(seed)
 
     if datatype == 'Franke':
-        x, y, z = f.FrankeDataBootstrap(n, noise)
-        print(max(z))
+        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise)
 
     elif datatype == 'Terrain':
-        x, y, z = f.TerrainDataBootstrap(n, filename)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainData(n, filename)
 
 
     for degree in range(maxdegree):
@@ -31,12 +30,11 @@ def bootstrap(n, maxdegree, n_bootstrap, noise, method, seed=130, datatype='Fran
         polydegree[degree] = degree
 
         #Create design matrix
-        X = f.design_matrix(x, y, degree)
+        X_train = f.design_matrix(x_train, y_train, degree)
+        X_test = f.design_matrix(x_test, y_test, degree)
 
-        # Split in training and test data
-        X_train, X_test, z_train, z_test = train_test_split(X, z.reshape(-1, 1), test_size = 0.3)
 
-        # Scale data by subtracting the mean
+        # Standardize data
         scaler = StandardScaler()                   # removes the mean and scales each feature/variable to unit variance
         scaler.fit(X_train)                         # compute the mean and std to be used for later scaling
         X_train_scaled = scaler.transform(X_train)  # perform standardization by centering and scaling
@@ -75,7 +73,7 @@ def bootstrap(n, maxdegree, n_bootstrap, noise, method, seed=130, datatype='Fran
 
         MSE_bootstrap_test[degree] = np.mean(np.mean((z_test_scaled - z_tilde_test)**2, axis=1, keepdims=True))
         MSE_bootstrap_train[degree] = np.mean(np.mean((z_train_scaled - z_tilde_train)**2, axis=1, keepdims=True))
-        bias_bootstrap[degree] = np.mean((z_test - np.mean(z_tilde_test, axis=1, keepdims=True))**2)
+        bias_bootstrap[degree] = np.mean((z_test_scaled - np.mean(z_tilde_test, axis=1, keepdims=True))**2)
         variance_bootstrap[degree] = np.mean( np.var(z_tilde_test, axis=1, keepdims=True))
 
     return polydegree, MSE_bootstrap_test, MSE_bootstrap_train, \

@@ -38,14 +38,13 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
     R2Score_skl = np.zeros(maxdegree)
 
     # Make data
-    print(f"n = {n}")
     np.random.seed(int(seed))
 
     if datatype == 'Franke':
-        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeDataCV(n, noise)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise, test_size=0)
 
     elif datatype =='Terrain':
-        x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainDataCV(n, filename)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainData(n, filename)
 
 
 
@@ -117,7 +116,6 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
     # Find the degree with smallest MSE
     best_degree = np.argmin(MSE_mean)
-    print(best_degree)
 
     # Make fit to holy test data
     X_train_best = f.design_matrix(x_train, y_train, best_degree)
@@ -140,7 +138,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
 
 
-    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean
+    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree
 
 if __name__ == '__main__':
     # initial data

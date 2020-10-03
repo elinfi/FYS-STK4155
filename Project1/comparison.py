@@ -1,30 +1,35 @@
 import numpy as np
+import functions as f
 import matplotlib.pyplot as plt
+from p1_a import no_resampling
 from bootstrap import bootstrap
 from cross_validation import cross_validation
-from functions import OLS
 from time import time
 
 # initial data
-n = 30                    # number of data points
+n = 30                   # number of data points
 maxdegree = 23
 noise = 0.1
 n_folds = 5              # number of folds
-n_bootstrap = 100
-method = OLS
-lmbda = 0
-seed = 4018
+n_bootstrap = 20
+method = f.Ridge
+lmbda = 0.001
+seed = 7053
+
+polydegree, MSE_train, MSE_test, MSE_train_scaled, MSE_test_scaled, R2Score_scaled = no_resampling(n, maxdegree, noise, method, seed=seed, lmbda=lmbda)
 
 start = time()
-polydegree_cv, MSE_mean, MSE_best, R2Score_skl, R2Score_mean = cross_validation(n, maxdegree, noise, n_folds, method, seed, lmbda)
+polydegree_cv, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree = cross_validation(n, maxdegree, noise, n_folds, method, seed, lmbda)
 end = time()
 print(f"cv: {end - start}")
 
 start = time()
-polydegree_b, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, seed)
+polydegree_b, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, seed, lmbda=lmbda)
 end = time()
 print(f"bootstrap: {end - start}")
+
 plt.style.use("ggplot")
+# plt.plot(polydegree, MSE_test_scaled, label='no regression')
 plt.plot(polydegree_cv, MSE_mean, label='cross validation')
 plt.plot(polydegree_b, MSE_bootstrap_test, label='bootstrap')
 plt.xlabel('Model complexity', size=12)
