@@ -5,13 +5,14 @@ from bootstrap import bootstrap
 from cross_validation import cross_validation
 
 # initial data
-n = 50            # number of data points
-maxdegree = 40
+n = 30            # number of data points
+maxdegree = 25
 noise = 0.1
 n_folds = 5             # number of folds
 n_bootstrap = 5
 method = 'Lasso'
-lmbda_arr = np.array([0.005, 0.01, 0.05, 0.1, 0.5])
+# lmbda_arr = np.array([0.005, 0.01, 0.05, 0.1, 0.5])
+lmbda_arr = np.array([0.0001])
 seed = 130
 
 for lmbda in lmbda_arr:
