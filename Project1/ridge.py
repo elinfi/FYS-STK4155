@@ -1,7 +1,7 @@
 import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
-from functions import Ridge
+import functions as f
 from bootstrap import bootstrap
 from cross_validation import cross_validation
 
@@ -11,8 +11,8 @@ maxdegree = 23
 noise = 0.1
 n_folds = 5             # number of folds
 n_bootstrap = 50
-method = 'Lasso'
-lmbda = np.logspace(-4, 0, 5)
+method = f.Ridge
+lmbda = np.logspace(-4, 1, 6)
 seed = 7053
 
 ridge_heatmap_cv = np.zeros((maxdegree, len(lmbda)))
@@ -37,7 +37,7 @@ heatmap = sb.heatmap(ridge_heatmap_cv, annot=True, cmap='viridis_r', \
 heatmap.set_xlabel('$\lambda$', size=12)
 heatmap.set_ylabel('Model complexity', size=12)
 heatmap.invert_xaxis()
-heatmap.set_title('Heatmap made for cross validation using ridge', size=18)
+heatmap.set_title('Heatmap made for ridge using cross validation', size=18)
 plt.show()
 
 heatmap = sb.heatmap(ridge_heatmap_bootstrap, annot=True, cmap='viridis_r', \
@@ -46,5 +46,5 @@ heatmap = sb.heatmap(ridge_heatmap_bootstrap, annot=True, cmap='viridis_r', \
 heatmap.set_xlabel('$\lambda$', size=12)
 heatmap.set_ylabel('Model complexity', size=12)
 heatmap.invert_xaxis()
-heatmap.set_title('Heatmap made for bootstrap using ridge', size=18)
+heatmap.set_title('Heatmap made for ridge using bootstrap', size=18)
 plt.show()
