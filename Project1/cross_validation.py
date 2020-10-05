@@ -41,7 +41,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
     np.random.seed(int(seed))
 
     if datatype == 'Franke':
-        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise, test_size=0)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise, test_size=0.3)
 
     elif datatype =='Terrain':
         x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainData(n, filename)
