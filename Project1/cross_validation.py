@@ -34,6 +34,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
     polydegree = np.zeros(maxdegree)
     MSE_mean = np.zeros(maxdegree)
+    MSE_mean_sklearn = np.zeros(maxdegree)
     R2Score_mean = np.zeros(maxdegree)
     R2Score_skl = np.zeros(maxdegree)
 
@@ -41,7 +42,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
     np.random.seed(int(seed))
 
     if datatype == 'Franke':
-        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise, test_size=0.3)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise)
 
     elif datatype =='Terrain':
         x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainData(n, filename)
@@ -56,6 +57,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
         # Shuffle data to get random folds
         index = np.arange(0, np.shape(X_train)[0], 1)
+        np.random.seed(int(seed))
         np.random.shuffle(index)
         X_train_random = X_train[index,:]
         z_train_random = z_train[index]
@@ -63,6 +65,11 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
         # Split data in n_folds folds
         X_folds = np.array(np.array_split(X_train_random, n_folds))
         z_folds = np.array(np.array_split(z_train_random, n_folds))
+
+        if method == f.Ridge:
+            clf = skl.Ridge()
+            scores = cross_val_score(clf, X_train, z_train, cv=n_folds, scoring='neg_mean_squared_error')
+            MSE_mean_sklearn[degree] = np.abs(np.mean(scores))
 
         # cross validation
         for k in range(n_folds):
@@ -100,8 +107,9 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
             elif method == f.Ridge:
                 beta_fold = method(X_train_fold_scaled, z_train_fold_scaled, lmbda, degree)
                 z_tilde_fold = X_val_scaled @ beta_fold
+
             elif method == 'Lasso':
-                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=False).fit(X_train_fold_scaled, z_train_fold_scaled)
+                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=True).fit(X_train_fold_scaled, z_train_fold_scaled)
                 z_tilde_fold = clf_lasso.predict(X_val_scaled)
 
             MSE_mean[degree] += f.MSE(z_val_scaled, z_tilde_fold)
@@ -116,6 +124,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
     # Find the degree with smallest MSE
     best_degree = np.argmin(MSE_mean)
+    print(best_degree)
 
     # Make fit to holy test data
     X_train_best = f.design_matrix(x_train, y_train, best_degree)
@@ -138,7 +147,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
 
 
-    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree
+    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn
 
 if __name__ == '__main__':
     # initial data
