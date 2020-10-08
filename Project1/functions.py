@@ -17,7 +17,7 @@ def FrankeData(n, noise, test_size=0.3):
     y = np.sort(np.random.uniform(0, 1, n))
 
     x, y = np.meshgrid(x, y)
-    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = test_size, random_state=7053)
 
     # Franke Function
     z_train = np.ravel(FrankeFunction(x_train, y_train) + noise*np.random.randn(x_train.shape[0], x_train.shape[1]))

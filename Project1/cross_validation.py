@@ -42,7 +42,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
     np.random.seed(int(seed))
 
     if datatype == 'Franke':
-        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise)
+        x_train, x_test, y_train, y_test, z_train, z_test = f.FrankeData(n, noise, test_size=0.3)
 
     elif datatype =='Terrain':
         x_train, x_test, y_train, y_test, z_train, z_test = f.TerrainData(n, filename)
@@ -70,6 +70,46 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
             clf = skl.Ridge()
             scores = cross_val_score(clf, X_train, z_train, cv=n_folds, scoring='neg_mean_squared_error')
             MSE_mean_sklearn[degree] = np.abs(np.mean(scores))
+            best_degree_sklearn = np.argmin(MSE_mean_sklearn)
+
+            # Make fit to holy test data
+            X_train_best = f.design_matrix(x_train, y_train, best_degree)
+            scaler.fit(X_train_best)
+            X_train_best_scaled = scaler.transform(X_train_best)
+            X_test_best = f.design_matrix(x_test, y_test, best_degree)
+            X_test_best_scaled = scaler.transform(X_test_best)
+
+            X_train_best_scaled[:, 0] = 1
+            X_test_best_scaled[:, 0] = 1
+
+            scaler.fit(z_train.reshape(-1, 1))
+            z_train_scaled = scaler.transform(z_train.reshape(-1, 1))
+            z_test_scaled = scaler.transform(z_test.reshape(-1, 1))
+
+            beta_best_sklearn = f.OLS(X_train_best_scaled, z_train_scaled)
+
+
+        elif method == 'Lasso':
+            clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=False)
+            scores = cross_val_score(clf_lasso, X_train, z_train, cv=n_folds, scoring='neg_mean_squared_error')
+            MSE_mean_sklearn[degree] = np.abs(np.mean(scores))
+            best_degree_sklearn = np.argmin(MSE_mean_sklearn)
+
+            # Make fit to holy test data
+            X_train_best = f.design_matrix(x_train, y_train, best_degree)
+            scaler.fit(X_train_best)
+            X_train_best_scaled = scaler.transform(X_train_best)
+            X_test_best = f.design_matrix(x_test, y_test, best_degree)
+            X_test_best_scaled = scaler.transform(X_test_best)
+
+            X_train_best_scaled[:, 0] = 1
+            X_test_best_scaled[:, 0] = 1
+
+            scaler.fit(z_train.reshape(-1, 1))
+            z_train_scaled = scaler.transform(z_train.reshape(-1, 1))
+            z_test_scaled = scaler.transform(z_test.reshape(-1, 1))
+
+            beta_best_sklearn = f.OLS(X_train_best_scaled, z_train_scaled)
 
         # cross validation
         for k in range(n_folds):
@@ -95,9 +135,11 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
             X_train_fold_scaled[:, 0] = 1
             X_val_scaled[:, 0] = 1
 
-            scaler.fit(z_train_fold)
-            z_train_fold_scaled = scaler.transform(z_train_fold)
-            z_val_scaled = scaler.transform(z_val)
+            # scaler.fit(z_train_fold)
+            # z_train_fold_scaled = scaler.transform(z_train_fold)
+            # z_val_scaled = scaler.transform(z_val)
+            z_train_fold_scaled = z_train_fold
+            z_val_scaled = z_val
 
             # Choose method for calculating coefficients beta
             if method == f.OLS:
@@ -109,7 +151,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
                 z_tilde_fold = X_val_scaled @ beta_fold
 
             elif method == 'Lasso':
-                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=True).fit(X_train_fold_scaled, z_train_fold_scaled)
+                clf_lasso = skl.Lasso(alpha = lmbda, fit_intercept=False).fit(X_train_fold_scaled, z_train_fold_scaled)
                 z_tilde_fold = clf_lasso.predict(X_val_scaled)
 
             MSE_mean[degree] += f.MSE(z_val_scaled, z_tilde_fold)
@@ -147,7 +189,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
 
 
-    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn
+    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn, beta_best_sklearn
 
 if __name__ == '__main__':
     # initial data
