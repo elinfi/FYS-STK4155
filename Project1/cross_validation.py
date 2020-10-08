@@ -214,7 +214,7 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
 
 
 
-    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn, beta_best_sklearn
+    return polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn, best_degree_sklearn, beta_best_sklearn
 
 if __name__ == '__main__':
     # initial data

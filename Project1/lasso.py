@@ -19,7 +19,7 @@ lasso_heatmap_cv = np.zeros((maxdegree, len(lmbda)))
 lasso_heatmap_cv_sklearn = np.zeros((maxdegree, len(lmbda)))
 lasso_heatmap_bootstrap = np.zeros((maxdegree, len(lmbda)))
 for i in range(len(lmbda)):
-    polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn, beta_best_sklearn = cross_validation(n, maxdegree, noise, n_folds, method, lmbda[i], seed)
+    polydegree, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, best_degree, MSE_mean_sklearn, best_degree_sklearn, beta_best_sklearn = cross_validation(n, maxdegree, noise, n_folds, method, lmbda[i], seed)
     # polydegree, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, seed, lmbda=lmbda[i])
     plt.plot(polydegree, MSE_mean, label=f"CV, $\lambda$ = {lmbda[i]}")
     # plt.plot(polydegree, MSE_bootstrap_test, label=f"bootstrap, $\lambda$ = {lmbda[i]}")

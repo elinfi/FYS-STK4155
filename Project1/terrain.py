@@ -28,14 +28,14 @@ maxdegree = 23
 n_bootstrap = 100
 n_folds = 5
 noise = 0.1
-method = f.OLS
+method = f.Ridge
 lmbda = 0.1
 
 # polydegree, MSE_bootstrap_test, MSE_bootstrap_train, bias_bootstrap, \
 # variance_bootstrap = bootstrap(n, maxdegree, n_bootstrap, noise, method, \
 #                                datatype='Terrain', filename=filename)
 polydegree_cv, MSE_mean, MSE_best, R2Score_skl, R2Score_mean, beta_best, \
-best_degree, MSE_mean_sklearn, beta_best_sklearn \
+best_degree, MSE_mean_sklearn, best_degree_sklearn, beta_best_sklearn \
     = cross_validation(n, maxdegree, noise, n_folds, method, lmbda=lmbda, \
                        datatype='Terrain', filename=filename)
 
