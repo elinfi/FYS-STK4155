@@ -46,6 +46,7 @@ best_degree, MSE_mean_sklearn, best_degree_sklearn, beta_best_sklearn \
 # plt.legend()
 # plt.close()
 
+print(best_degree, best_degree_sklearn)
 
 
 # Normalize data
@@ -60,23 +61,36 @@ terrain_scaled = terrain_scaled[:n, :n]
 x = np.sort(np.linspace(0, 1, terrain_scaled.shape[0]))
 y = np.sort(np.linspace(0, 1, terrain_scaled.shape[1]))
 x, y = np.meshgrid(x, y)
+
 X = f.design_matrix(x, y, best_degree)
 z_tilde = X @ beta_best
 z_tilde = z_tilde.reshape(x.shape[0], x.shape[1])
 print(f.MSE(terrain_scaled, z_tilde))
 
+X_sklearn = f.design_matrix(x, y, best_degree_sklearn)
+z_tilde_sklearn = X_sklearn @ beta_best_sklearn
+z_tilde_sklearn = z_tilde_sklearn.reshape(x.shape[0], x.shape[1])
+print(f.MSE(terrain_scaled, z_tilde_sklearn))
 
-plt.subplot(121)
+
+plt.subplot(131)
 plt.imshow(terrain_scaled, cmap='gist_rainbow')
 
-plt.subplot(122)
+plt.subplot(132)
 plt.imshow(z_tilde, cmap='gist_rainbow')
+
+plt.subplot(133)
+plt.imshow(z_tilde_sklearn, cmap='gist_rainbow')
 plt.show()
 
-fig, ax = plt.subplots(1, 2)
+
+fig, ax = plt.subplots(1, 3)
 cp1 = ax[0].contour(x, y, terrain_scaled)
 fig.colorbar(cp1)
 
 cp2 = ax[1].contour(x, y, z_tilde)
 fig.colorbar(cp2)
+
+cp3 = ax[2].contour(x, y, z_tilde_sklearn)
+fig.colorbar(cp3)
 plt.show()
