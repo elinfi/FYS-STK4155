@@ -64,7 +64,7 @@ def TerrainData(n, filename, test_size=0.3):
     x, y = np.meshgrid(x, y)
 
     # Split data in train and test
-    x_train, x_test, y_train, y_test, z_train, z_test = train_test_split(x, y, terrain_scaled, test_size = 0.3)
+    x_train, x_test, y_train, y_test, z_train, z_test = train_test_split(x, y, terrain_scaled, test_size = test_size)
     z_train = np.reshape(np.ravel(z_train), (-1, 1))
     z_test = np.reshape(np.ravel(z_test), (-1, 1))
 
