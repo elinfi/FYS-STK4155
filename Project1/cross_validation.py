@@ -66,17 +66,41 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
         X_folds = np.array(np.array_split(X_train_random, n_folds))
         z_folds = np.array(np.array_split(z_train_random, n_folds))
 
-        if method == f.Ridge:
+        if method == f.OLS:
+            clf = skl.LinearRegression()
+            scores = cross_val_score(clf, X_train, z_train, cv=n_folds, scoring='neg_mean_squared_error')
+            MSE_mean_sklearn[degree] = np.abs(np.mean(scores))
+            best_degree_sklearn = np.argmin(MSE_mean_sklearn)
+
+            # Make fit to holy test data
+            X_train_best = f.design_matrix(x_train, y_train, best_degree_sklearn)
+            scaler = StandardScaler()
+            scaler.fit(X_train_best)
+            X_train_best_scaled = scaler.transform(X_train_best)
+            X_test_best = f.design_matrix(x_test, y_test, best_degree_sklearn)
+            X_test_best_scaled = scaler.transform(X_test_best)
+
+            X_train_best_scaled[:, 0] = 1
+            X_test_best_scaled[:, 0] = 1
+
+            scaler.fit(z_train.reshape(-1, 1))
+            z_train_scaled = scaler.transform(z_train.reshape(-1, 1))
+            z_test_scaled = scaler.transform(z_test.reshape(-1, 1))
+
+            beta_best_sklearn = f.OLS(X_train_best_scaled, z_train_scaled)
+
+        elif method == f.Ridge:
             clf = skl.Ridge()
             scores = cross_val_score(clf, X_train, z_train, cv=n_folds, scoring='neg_mean_squared_error')
             MSE_mean_sklearn[degree] = np.abs(np.mean(scores))
             best_degree_sklearn = np.argmin(MSE_mean_sklearn)
 
             # Make fit to holy test data
-            X_train_best = f.design_matrix(x_train, y_train, best_degree)
+            X_train_best = f.design_matrix(x_train, y_train, best_degree_sklearn)
+            scaler = StandardScaler()
             scaler.fit(X_train_best)
             X_train_best_scaled = scaler.transform(X_train_best)
-            X_test_best = f.design_matrix(x_test, y_test, best_degree)
+            X_test_best = f.design_matrix(x_test, y_test, best_degree_sklearn)
             X_test_best_scaled = scaler.transform(X_test_best)
 
             X_train_best_scaled[:, 0] = 1
@@ -96,10 +120,11 @@ def cross_validation(n, maxdegree, noise, n_folds, method=f.OLS, seed=130, lmbda
             best_degree_sklearn = np.argmin(MSE_mean_sklearn)
 
             # Make fit to holy test data
-            X_train_best = f.design_matrix(x_train, y_train, best_degree)
+            X_train_best = f.design_matrix(x_train, y_train, best_degree_sklearn)
+            scaler = StandardScaler()
             scaler.fit(X_train_best)
             X_train_best_scaled = scaler.transform(X_train_best)
-            X_test_best = f.design_matrix(x_test, y_test, best_degree)
+            X_test_best = f.design_matrix(x_test, y_test, best_degree_sklearn)
             X_test_best_scaled = scaler.transform(X_test_best)
 
             X_train_best_scaled[:, 0] = 1
