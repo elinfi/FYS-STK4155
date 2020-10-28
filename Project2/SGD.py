@@ -5,7 +5,7 @@ import sklearn.linear_model as skl
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-def learning_rate(t, t0 = 5, t1 = 50):
+def learning_rate(t, t0 = 5, t1 = 100):
     return t0/(t + t1)
 
 def grad_cost_function(X_batch, z_batch, beta, batch_size, lmbda=0):
@@ -45,7 +45,7 @@ def SGD(X_train, X_test, z_train, z_test, n_epochs, batch_size, gamma=0.9, lmbda
 
 
 n = 100
-noise = 0.1
+noise = 0
 degree = 10
 n_epochs = 500
 batch_size = 10
