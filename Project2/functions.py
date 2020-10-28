@@ -64,3 +64,7 @@ def design_matrix(x, y, degree):
 def MSE(z, ztilde):
     MSE = np.mean((z - ztilde)**2)
     return MSE
+
+def OLS(X, z):
+    beta = np.linalg.pinv(X.T @ X) @ (X.T @ z)
+    return beta
