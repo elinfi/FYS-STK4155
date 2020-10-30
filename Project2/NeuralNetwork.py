@@ -10,7 +10,7 @@ class DenseLayer:
         self.n_outputs = n_outputs
         self.activation = activation
         self.w = np.random.rand(self.n_inputs, self.n_outputs)
-        self.b = np.random.randn(1, self.n_outputs)
+        self.b = 0.01*np.ones((1, self.n_outputs))
 
     def __call__(self, X):
         self.z = X @ self.w + self.b
@@ -35,11 +35,11 @@ class NeuralNetwork:
         for l in reversed(range(1, len(layers) - 1)):
             delta_L = (delta_L @ layers[l + 1].w.T) * layers[l].a_deriv
             layers[l].w =  layers[l].w - eta*(layers[l - 1].a.T @ delta_L)
-            layers[l].b = layers[l].b - eta*delta_L
+            layers[l].b = layers[l].b - eta*delta_L[0]
 
         delta_L = (delta_L @ layers[1].w.T) * layers[0].a_deriv
         layers[0].w = layers[0].w - eta*(X.T @ delta_L)
-        layers[0].b = layers[0].b - eta*delta_L
+        layers[0].b = layers[0].b - eta*delta_L[0]
 
         self.feedforward(X)
 
