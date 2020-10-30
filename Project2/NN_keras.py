@@ -1,5 +1,7 @@
 import numpy as np
 import functions as f
+import tensorflow as tf
+from data_prep import DataPrep
 from tensorflow.keras.layers import Input
 from tensorflow.keras.models import Sequential      #This allows appending layers to existing models
 from tensorflow.keras.layers import Dense           #This allows defining the characteristics of a particular layer
@@ -16,31 +18,34 @@ n_neurons_layer3 = 1
 n = 50
 eta = 0.5
 
-def create_neural_network_keras(n_neurons_layer1, n_neurons_layer2, n_categories, eta, lmbd):
+def create_neural_network_keras(n_neurons_layer1, n_neurons_layer2, n_categories, eta):
     model = Sequential()
     model.add(Dense(n_neurons_layer1, activation='sigmoid'))
     model.add(Dense(n_neurons_layer2, activation='sigmoid'))
-    model.add(Dense(n_neurons_layer3, activation=tf.identity))
+    # model.add(Dense(n_categories, activation=tf.identity))
+    model.add(Dense(n_categories, activation='softmax'))
 
     sgd = optimizers.SGD(lr=eta)
-    model.compile(loss='mean_squared_error')
+    model.compile(loss='mean_squared_error', optimizer=sgd)
+    return model
 
-x = np.sort(np.random.uniform(0, 1, n))
-y = np.sort(np.random.uniform(0, 1, n))
-x, y = np.meshgrid(x, y)
-z = np.ravel(f.FrankeFunction(x, y))
-z = z.reshape(-1, 1)
+if __name__ == '__main__':
 
-data = DataPrep(x, y, z, degree=5)
-X_train, X_test, z_train, z_test = data()
+    x = np.sort(np.random.uniform(0, 1, n))
+    y = np.sort(np.random.uniform(0, 1, n))
+    x, y = np.meshgrid(x, y)
+    z = np.ravel(f.FrankeFunction(x, y))
+    z = z.reshape(-1, 1)
 
-DNN = create_neural_network_keras(n_neurons_layer1, n_neurons_layer2, \
-                                  n_neurons_layer3, eta=eta)
-DNN.fit(X_train, z_train, epochs=epochs, batch_size=batch_size, verbose=0)
-scores = DNN.evaluate(X_test, z_test)
+    data = DataPrep(x, y, z, degree=5)
+    X_train, X_test, z_train, z_test = data()
+
+    DNN = create_neural_network_keras(n_neurons_layer1, n_neurons_layer2, \
+                                      n_outputs, eta=eta)
+    DNN.fit(X_train, z_train, epochs=epochs, batch_size=X_train.shape[0], verbose=0)
+    scores = DNN.evaluate(X_test, z_test)
 
 
-print("Learning rate = ", eta)
-print("Lambda = ", lmbd)
-print("Test accuracy: %.3f" % scores[1])
-print()
+    print("Learning rate = ", eta)
+    print("Test accuracy: %.3f" % scores)
+    print()
