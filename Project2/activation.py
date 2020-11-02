@@ -42,8 +42,14 @@ class Sigmoid:
 
 class Softmax:
     def __call__(self, z):
+        # print(z.shape)
+        # print(np.exp(z).shape)
+        # print(np.sum(np.exp(z), axis=1))
+        # print(np.exp(z)/np.sum(np.exp(z), axis=1)[:, None])
         return np.exp(z)/np.sum(np.exp(z), axis=1)[:, None]
 
     def deriv(self, z):
+        # print(self.__call__(z) - (self.__call__(z))**2)
         return self.__call__(z) - (self.__call__(z))**2
+
         # z * np.ones(len(z)).T.dot(np.eye(len(z)) - np.ones(len(z))*z.T)
