@@ -4,7 +4,8 @@ import activation as act
 import cost_functions as cost
 from sklearn import datasets
 from data_prep import DataPrep
-from NeuralNetwork import DenseLayer, NeuralNetwork
+from NeuralNetwork import NeuralNetwork
+from NN_keras import Keras
 
 # download MNIST dataset
 digits = datasets.load_digits()
@@ -13,40 +14,50 @@ digits = datasets.load_digits()
 inputs = digits.images
 labels = digits.target.reshape(-1, 1)
 
-print("inputs = (n_inputs, pixel_width, pixel_height) = " + str(inputs.shape))
-print("labels = (n_inputs) = " + str(labels.shape))
-
-
 # flatten the image
 # the value -1 means dimension is inferred from the remaining dimensions: 8x8 = 64
 n_inputs = len(inputs)
 inputs = inputs.reshape(n_inputs, -1)
 print("X = (n_inputs, n_features) = " + str(inputs.shape))
 
+
 data = DataPrep()
-X_train, X_test, z_train, z_test = data.train_test_scale(inputs, labels)
+one_hot = data.create_one_hot(n_inputs, labels)
+X_train, X_test, z_train, z_test = data.train_test_split(inputs, one_hot)
 
 n_inputs = X_train.shape[1]
-n_neurons_layer1 = 20
-n_neurons_layer2 = 50
-n_outputs = 1
+neurons = [50, 20, 100, 50, 20]
+n_outputs = 10
 
-layer1 = DenseLayer(n_inputs, n_neurons_layer1, act.Sigmoid())
-layer2 = DenseLayer(n_neurons_layer1, n_neurons_layer2, act.Sigmoid())
-layer3 = DenseLayer(n_neurons_layer2, n_outputs, act.Softmax())
-
-layers = [layer1, layer2, layer3]
-network = NeuralNetwork(layers, cost.Accuracy())
+network = NeuralNetwork(n_inputs, neurons, n_outputs, cost.MSE())
+network.create_layers(act.Sigmoid(), act.Softmax())
 network.feedforward(X_train)
-print(layer3.a)
 
-# choose some random images to display
-indices = np.arange(n_inputs)
-random_indices = np.random.choice(indices, size=5)
+n_epochs = 500
+eta = 0.5
+for i in range(n_epochs):
+    network.backprop(X_train, z_train, eta)
 
-for i, image in enumerate(digits.images[random_indices]):
-    plt.subplot(1, 5, i+1)
-    plt.axis('off')
-    plt.imshow(image, cmap=plt.cm.gray_r, interpolation='nearest')
-    plt.title("Label: %d" % digits.target[random_indices[i]])
-plt.show()
+network.feedforward(X_test)
+
+accuracy = cost.Accuracy()
+z_tilde = (network.layers[-1].a)
+print(z_tilde)
+print(z_test)
+print(accuracy(z_tilde, np.argmax(z_test, axis=1)))
+
+NN_keras = Keras(neurons, n_outputs, eta, loss='mean_squared_error', \
+                 metrics=['accuracy'], input_act='sigmoid', output_act='softmax')
+model = NN_keras.create_neural_network_keras()
+model.fit(X_train, z_train, epochs=n_epochs, batch_size=X_train.shape[0], verbose=0)
+scores = model.evaluate(X_test, z_test)
+scores = model.evaluate(X_train, z_train)
+
+
+print('HEIHEIHEI')
+print(model.predict(X_test))
+z_tilde = np.argmax(model.predict(X_train), axis=1).reshape(-1, 1)
+print(z_tilde)
+print(z_train - z_tilde)
+print(z_train.shape)
+print(accuracy(z_tilde, np.argmax(z_train)))
