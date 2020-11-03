@@ -51,22 +51,3 @@ class NeuralNetwork:
         layers[0].b = layers[0].b - eta*delta_L[0]
 
         self.feedforward(X)
-
-if __name__ == '__main__':
-
-
-    x = np.linspace(0,1,100).reshape(-1,1)
-    y = x**2 + 0.1*np.random.randn(100, 1)
-
-    layer1 = DenseLayer(1, 10, act.Sigmoid())
-    layer2 = DenseLayer(10, 10, act.Sigmoid())
-    layer3 = DenseLayer(10, 1, act.Identity())
-
-    layers = [layer1, layer2, layer3]
-    network = NeuralNetwork(layers, cost.MSE())
-    network.feedforward(x)
-    print(f.MSE(y, layer3.a))
-
-    for i in range(1000):
-        network.backprop(x, y, 0.5)
-    print(f.MSE(y, layer3.a))
