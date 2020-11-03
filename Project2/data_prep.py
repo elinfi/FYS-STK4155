@@ -36,3 +36,17 @@ class DataPrep:
         X_test_scaled[:, 0] = 1
 
         return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
+
+    def train_test_split(self, X, z):
+        X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.3)
+
+        scaler = StandardScaler()
+        scaler.fit(X_train)
+        X_train_scaled = scaler.transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+
+        # Set the first column to 1 since StandardScaler sets it to 0
+        X_train_scaled[:, 0] = 1
+        X_test_scaled[:, 0] = 1
+
+        return X_train, X_test, z_train, z_test
