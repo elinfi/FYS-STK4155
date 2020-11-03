@@ -19,6 +19,12 @@ class DataPrep:
                 X[:, q + k] = (x**(i - k)) * (y**k)
         return X
 
+    def create_one_hot(self, n_inputs, labels):
+        one_hot = np.zeros((n_inputs, 10))
+        for i in range(n_inputs):
+            one_hot[i, labels[i]] = 1
+        return one_hot
+
     def train_test_scale(self, X, z):
         X_train, X_test, z_train, z_test = train_test_split(X, z, test_size=0.3)
 
