@@ -22,16 +22,23 @@ class LeakyRELU:
 
 class RELU:
     def __call__(self, z):
-        if z > 0:
-            return z
-        else:
-            return 0
+        boolean = z <= 0
+        z[boolean] = 0
+        return z
+        # if z > 0:
+        #     return z
+        # else:
+        #     return 0
 
     def deriv(self, z):
-        if z > 0:
-            return 1
-        else:
-            return 0
+        boolean = z > 0
+        z[boolean] = 1
+        z[~boolean] = 0
+        return z
+        # if z > 0:
+        #     return 1
+        # else:
+        #     return 0
 
 class Sigmoid:
     def __call__(self, z):
