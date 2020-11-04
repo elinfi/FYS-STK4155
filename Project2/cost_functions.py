@@ -10,3 +10,11 @@ class MSE:
 class Accuracy:
     def __call__(self, z_tilde, z):
         return np.mean(z_tilde == z)
+
+class CrossEntropy:
+    def __call__(self, z_tilde, z):
+        return -np.log(np.prod(np.pow(z_tilde,z)))
+
+    def deriv(self, z_tilde, z):
+        # return -np.sum(np.sum(z/z_tilde, axis=1), axis=0)
+        return z_tilde - z
