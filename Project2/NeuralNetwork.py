@@ -10,7 +10,8 @@ class DenseLayer:
         self.n_outputs = n_outputs
         self.activation = activation
         self.w = np.random.rand(self.n_inputs, self.n_outputs)
-        self.b = 0.01*np.ones((1, self.n_outputs))
+        self.b = np.random.rand(1, self.n_outputs)
+        # self.b = 0.01*np.ones((1, self.n_outputs))
 
     def __call__(self, X):
         self.z = X @ self.w + self.b
@@ -27,16 +28,39 @@ class NeuralNetwork:
 
     def create_layers(self, activation, output_activation):
         self.layers = []
-        self.layers.append(DenseLayer(self.n_inputs, self.neurons[0], activation)) # input layer
+        self.layers.append(DenseLayer(self.n_inputs, self.neurons[0],
+                                      activation)) # input layer
         for i in range(len(self.neurons) - 1):
-            self.layers.append(DenseLayer(self.neurons[i], self.neurons[i + 1], activation)) # hidden layers
-        self.layers.append(DenseLayer(self.neurons[-1], self.n_outputs, output_activation)) # output layer
+            self.layers.append(DenseLayer(self.neurons[i], self.neurons[i + 1],
+                                          activation)) # hidden layers
+        self.layers.append(DenseLayer(self.neurons[-1], self.n_outputs,
+                                      output_activation)) # output layer
 
     def feedforward(self, a):
         for layer in self.layers:
             a = layer(a)
 
     def backprop(self, X, y, eta):
+        self.feedforward(X)
+        layers = self.layers
+        dCda = self.cost.deriv(layers[-1].a, y)
+        delta_L = dCda * layers[-1].a_deriv
+
+        for l in reversed(range(1, len(layers) - 1)):
+            delta_L = (delta_L @ layers[l + 1].w.T) * layers[l].a_deriv
+            # print(layers[l - 1].a.T @ delta_L)
+            # print(delta_L[0])
+            # print()
+            layers[l].w =  layers[l].w - eta*(layers[l - 1].a.T @ delta_L)
+            layers[l].b = layers[l].b - eta*delta_L[0]
+
+        delta_L = (delta_L @ layers[1].w.T) * layers[0].a_deriv
+        layers[0].w = layers[0].w - eta*(X.T @ delta_L)
+        layers[0].b = layers[0].b - eta*delta_L[0]
+
+
+    def backprop_SGD(self, X, y, eta):
+        self.feedforward(X)
         layers = self.layers
         dCda = self.cost.deriv(layers[-1].a, y)
         delta_L = dCda * layers[-1].a_deriv
@@ -49,5 +73,3 @@ class NeuralNetwork:
         delta_L = (delta_L @ layers[1].w.T) * layers[0].a_deriv
         layers[0].w = layers[0].w - eta*(X.T @ delta_L)
         layers[0].b = layers[0].b - eta*delta_L[0]
-
-        self.feedforward(X)
