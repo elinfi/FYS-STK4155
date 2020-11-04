@@ -27,6 +27,7 @@ class Keras:
         model.add(Dense(self.n_outputs, activation=self.output_act))
 
         sgd = optimizers.SGD(lr=self.eta)
+        # sgd = optimizers.Adam(lr=self.eta)
         model.compile(loss=self.loss, optimizer=sgd, metrics=self.metrics)
 
         return model
