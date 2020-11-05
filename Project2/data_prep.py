@@ -55,4 +55,4 @@ class DataPrep:
         X_train_scaled[:, 0] = 1
         X_test_scaled[:, 0] = 1
 
-        return X_train, X_test, z_train, z_test
+        return X_train_scaled, X_test_scaled, z_train, z_test
