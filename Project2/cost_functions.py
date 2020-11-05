@@ -17,4 +17,5 @@ class CrossEntropy:
 
     def deriv(self, z_tilde, z):
         # return -np.sum(np.sum(z/z_tilde, axis=1), axis=0)
-        return z_tilde - z
+        # return -np.sum(z/z_tilde)
+        return (z_tilde - z)
