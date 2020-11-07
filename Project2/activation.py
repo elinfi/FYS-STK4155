@@ -1,29 +1,77 @@
 import numpy as np
 
 class Identity:
+    """Computes the identity activation function and its derivative."""
     def __call__(self, z):
+        """Applies the identity function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        z -- output data from identity function
+        """
         return z
 
     def deriv(self, z):
+        """Computes the derivative of the identity function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        np.ones(z.shape) -- the derivative of the identity function
+        """
         return np.ones(z.shape)
 
 class LeakyRELU:
+    """Computes the leaky ReLU activation function and its derivative."""
     def __call__(self, z):
+        """Applies the leaky ReLU activation function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        z -- output data from leaky ReLU function
+        """
         boolean = z < 0
         z[boolean] *= 0.01
-        if z < 0:
-            return 0.01*z
-        else:
-            return z
+        return z
+        # if z < 0:
+        #     return 0.01*z
+        # else:
+        #     return z
 
     def deriv(self, z):
-        if z < 0:
-            return 0.01
-        else:
-            return 1
+        """Computes the derivative of the leaky ReLU function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        z -- the derivative of the leaky ReLU function
+        """
+        boolean = z < 0
+        z[boolean] = 0.01
+        z[~boolean] = 1
+        return z
+        # if z < 0:
+        #     return 0.01
+        # else:
+        #     return 1
 
 class RELU:
+    """Computes the ReLU activation function and its derivative."""
     def __call__(self, z):
+        """Applies the ReLU activation function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        z -- output data from ReLU function
+        """
         boolean = z <= 0
         z[boolean] = 0
         return z
@@ -33,6 +81,14 @@ class RELU:
         #     return 0
 
     def deriv(self, z):
+        """Computes the derivative of the ReLU function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        z -- the derivative of the ReLU function
+        """
         boolean = z > 0
         z[boolean] = 1
         z[~boolean] = 0
@@ -43,26 +99,56 @@ class RELU:
         #     return 0
 
 class Sigmoid:
+    """Computes the sigmoid activation function and its derivative."""
     def __call__(self, z):
-        return 1/(1 + np.exp(-z))
+        """Applies the sigmoid activation function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        sigmoid -- output data from sigmoid function
+        """
+        sigmoid = 1/(1 + np.exp(-z))
+        return sigmoid
         # return np.exp(z)/(np.exp(z) + 1)
 
     def deriv(self, z):
+        """Computes the derivative of the sigmoid function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        deriv -- the derivative of the sigmoid function
+        """
         # return np.exp(-z)/(1 + np.exp(-z))**2
-        return self.__call__(z) - self.__call__(z)**2
+        deriv = self.__call__(z) - self.__call__(z)**2
+        return deriv
 
 class Softmax:
+    """Computes the softmax activation function and its derivative."""
     def __call__(self, z):
-        # print(z.shape)
-        # print(np.exp(z).shape)
-        # print(np.sum(np.exp(z), axis=1))
-        # print(np.exp(z)/np.sum(np.exp(z), axis=1)[:, None])
-        # print(z)
+        """Applies the softmax activation function.
+
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        softmax -- output data from sigmoid function
+        """
         max_z = np.max(z, axis=1).reshape(-1, 1)
-        return np.exp(z - max_z)/np.sum(np.exp(z - max_z), axis=1)[:, None]
+        softmax = np.exp(z - max_z)/np.sum(np.exp(z - max_z), axis=1)[:, None]
+        return softmax
 
     def deriv(self, z):
-        # print(self.__call__(z) - (self.__call__(z))**2)
-        return self.__call__(z) - (self.__call__(z))**2
+        """Computes the derivative of the softmax function.
 
-        # z * np.ones(len(z)).T.dot(np.eye(len(z)) - np.ones(len(z))*z.T)
+        Keyword arguments:
+        z -- input data
+
+        Return value:
+        deriv -- the derivative of the softmax function
+        """
+        deriv = self.__call__(z) - self.__call__(z)**2
+        return deriv
