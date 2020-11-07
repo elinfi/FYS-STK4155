@@ -21,6 +21,9 @@ class DenseLayer:
 
         Keyword arguments:
         X -- input data to layer
+
+        Return value:
+        self.a -- activation function applied on weighted sum
         """
         self.z = X @ self.w + self.b
         self.a = self.activation(self.z)
