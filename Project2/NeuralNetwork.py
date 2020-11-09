@@ -1,7 +1,7 @@
 import numpy as np
 
 class DenseLayer:
-    def __init__(self, n_inputs, n_outputs, activation):
+    def __init__(self, n_inputs, n_outputs, activation, seed=1004):
         """Create one layer in the neural network.
 
         Keyword arguments:
@@ -9,6 +9,7 @@ class DenseLayer:
         n_outputs -- number of outputs to the layer
         activation -- activation function used on input to get output
         """
+        np.random.seed(seed)
         self.n_inputs = n_inputs
         self.n_outputs = n_outputs
         self.activation = activation
@@ -46,7 +47,7 @@ class NeuralNetwork:
         self.n_outputs = n_outputs
         self.cost = cost
 
-    def create_layers(self, activation, output_activation, no_hidden=False):
+    def create_layers(self, activation, output_activation, seed=7053, no_hidden=False):
         """Set up the layers in the neural network.
 
         Keyword arguments:
@@ -60,18 +61,31 @@ class NeuralNetwork:
         if no_hidden:
             # creates network with only input and output layers
             self.layers.append(DenseLayer(self.n_inputs, self.n_outputs,
-                                          output_activation))
+                                          output_activation, seed))
         else:
             # input layer to first hidden layer
             self.layers.append(DenseLayer(self.n_inputs, self.neurons[0],
-                                          activation))
+                                          activation, seed))
             # hidden layers
             for i in range(len(self.neurons) - 1):
                 self.layers.append(DenseLayer(self.neurons[i], self.neurons[i + 1],
-                                              activation))
+                                              activation, seed))
             # last hidden layer to output layer
             self.layers.append(DenseLayer(self.neurons[-1], self.n_outputs,
-                                          output_activation))
+                                          output_activation, seed))
+
+    def learning_rate(self, t, t0 = 5, t1 = 100):
+        """Decreasing learning rate.
+
+        Keyword arguments:
+        t -- timestep
+        t0 -- numerator (default = 5)
+        t1 -- addition to t in enumerator (default = 100)
+
+        Return value:
+        t0/(t + t1) -- updated learning rate
+        """
+        return t0/(t + t1)
 
     def feedforward(self, a):
         """Feed forward.
@@ -110,7 +124,7 @@ class NeuralNetwork:
         # calculate delta_L for first hidden layer
         delta_L = (delta_L @ layers[1].w.T) * layers[0].a_deriv
         # update weights
-        layers[0].w = layers[0].w - eta*(X.T @ delta_L)
+        layers[0].w = layers[0].w - eta*(X.T @ delta_L) \
                       - 2*eta*lmbda*layers[0].w
         # update bias
         layers[0].b = layers[0].b - eta*delta_L[0, :]
