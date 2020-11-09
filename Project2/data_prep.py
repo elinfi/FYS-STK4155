@@ -68,9 +68,10 @@ class DataPrep:
         z_train_scaled = scaler.transform(z_train)
         z_test_scaled = scaler.transform(z_test)
 
-        # Set the first column to 1 since StandardScaler sets it to 0
-        X_train_scaled[:, 0] = 1
-        X_test_scaled[:, 0] = 1
+        if np.all(X[:, 0] == 1):
+            # Set the first column to 1 since StandardScaler sets it to 0
+            X_train_scaled[:, 0] = 1
+            X_test_scaled[:, 0] = 1
 
         return X_train_scaled, X_test_scaled, z_train_scaled, z_test_scaled
 
@@ -94,8 +95,9 @@ class DataPrep:
         X_train_scaled = scaler.transform(X_train)
         X_test_scaled = scaler.transform(X_test)
 
-        # Set the first column to 1 since StandardScaler sets it to 0
-        X_train_scaled[:, 0] = 1
-        X_test_scaled[:, 0] = 1
+        if np.all(X[:, 0] == 1):
+            # Set the first column to 1 since StandardScaler sets it to 0
+            X_train_scaled[:, 0] = 1
+            X_test_scaled[:, 0] = 1
 
         return X_train_scaled, X_test_scaled, z_train, z_test
