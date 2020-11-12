@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from sklearn import datasets
 from sklearn.metrics import confusion_matrix
 
-sys.path.append('../src')
+sys.path.append('../source')
 import functions as f
 import activation as act
 import cost_functions as cost

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from sklearn import datasets
 
-sys.path.append('../src')
+sys.path.append('../source')
 import functions as f
 import activation as act
 import cost_functions as cost

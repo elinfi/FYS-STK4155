@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
 
-sys.path.append('../src')
+sys.path.append('../source')
 import functions as f
 import activation as act
 import cost_functions as cost
