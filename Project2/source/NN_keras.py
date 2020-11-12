@@ -26,9 +26,10 @@ class Keras:
         self.neurons = neurons
         self.n_outputs = n_outputs
         self.eta = eta
+        self.lmbda = lmbda
         self.loss = loss
         self.metrics = metrics
-        self.input_act = input_act
+        self.hidden_act = hidden_act
         self.output_act = output_act
 
     def create_neural_network_keras(self):
@@ -42,10 +43,10 @@ class Keras:
         # create hidden layers
         for i in range(len(self.neurons)):
             model.add(Dense(self.neurons[i], activation=self.hidden_act,
-                            kernel_regularizer=regularizers.l2(lmbda)))
+                            kernel_regularizer=regularizers.l2(self.lmbda)))
         # create output layer
         model.add(Dense(self.n_outputs, activation=self.output_act,
-                        kernel_regularizer=regularizers.l2(lmbda)))
+                        kernel_regularizer=regularizers.l2(self.lmbda)))
 
         # set optimization method
         sgd = optimizers.SGD(lr=self.eta)
