@@ -1,15 +1,12 @@
 import re
 import nltk
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 from nltk.corpus import stopwords
 
-filename = 'data_trim.csv'
-
 def preprocessing(filename):
     df = pd.read_csv(filename, usecols=[1, 2])
+    test = pd.Series(["oviovnre them she iovne ionc", "oviern iosnf most iocn wasn't"])
 
     # remove retweets
     RT = df['tweet'].str.contains(r" RT @| rt @| Rt @")
@@ -26,14 +23,14 @@ def preprocessing(filename):
     # remove repeated tweets
     df = df.drop_duplicates()
 
-    tounge = df['tweet'].str.contains(r":P|:\|")
-    df = df.loc[~tounge]
+    # tounge = df['tweet'].str.contains(r":P|:\|")
+    # df = df.loc[~tounge]
 
     # remove text
     df = df.replace(to_replace=[r"\@[\w_]*", # @Username
                                 r"http[s]*:\/\/[^\s]*", # URL
                                 r"&quot;", # quotation
-                                r"[^a-zA-Z:\(\)\[\]=\-' ]"], # special characters
+                                r"[^a-zA-Z:\(\)\[\]=\-' ]"], # special character
                     value=r"",
                     regex=True)
 
@@ -43,13 +40,19 @@ def preprocessing(filename):
                     regex=True)
 
     # remove stopwords
-    df = df.replace(to_replace=stopwords.words('english'),
-    value=r"")
+    test = test.replace(to_replace=stopwords.words('english'),
+                        value=r"")
 
     # remove suffixes from words
     stemmer = nltk.stem.SnowballStemmer("english")
+    # lemma = nltk.wordnet.WordNetLemmatizer()
+    # lemma.lemmatize(i)
     tokens = df['tweet'].str.split()
     stemmed_tokens = tokens.apply(lambda x: [stemmer.stem(i) for i in x])
     df['tweet'] = stemmed_tokens.str.join(' ')
 
-    return df
+    return test
+
+if __name__ == '__main__':
+    filename = 'data_trim.csv'
+    print(preprocessing(filename))
