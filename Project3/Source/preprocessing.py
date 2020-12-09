@@ -4,31 +4,63 @@ import pandas as pd
 
 from nltk.corpus import stopwords
 from spellchecker import SpellChecker
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 def preprocessing(filename):
     df = pd.read_csv(filename, usecols=[1, 2])
-    df = df[:10000]
-    test = pd.Series(["oviovnre them she me no such here iovne cat ionc", "oviern iosnf doesn't most iocn wasn't", "i STILL have the 2 bricks, that wasn't my stuff lastnight."])
+    # df = df[:10]
+    # df = pd.DataFrame({'tweet': [r":-) :-&gt; :L :S :-O", r"oiveroi:) jovnrs :-*:P", r"kverbx-Doinv joij ;D"], 'labels': [1, 2, 3]})
+
+
+    positive = (r":-\)|:\)|:-\]|:]|:-3|:3|:-&gt;|:&gt;|8-\)|8\)|:-\}|:\}|:o\)|"
+                + r":c\)|:\^\)|=\]|=\)|:-D|:D|8-D|8D|x-D|xD|X-D|XD|=D|=3|B\^D"
+                + r":'-\)|:'\)|:-\*|:\*|;-\)|;\)|\*-\)|\*\)|;-\]|;\]|;\^\)|:-,|"
+                + r";D")
+    negative = (r":-\(|:\(|:-c|:c|:-&lt;|:&lt;|:-\[|:\[|:-\|\||&gt;:\[|:\{|:@|"
+                + r";\(|:'-\(|:'\(|D-':|D:&lt;|D:|D8|D;|D=|:-\/|:\/|:-\.|"
+                + r"&gt;:\\|&gt;:\/|:\\|=\/|=\\|:L|=L|:S|&gt;:-\)|&gt;:\)|"
+                + r"\}:-\)|\}:\)|3:-\)|3:\)|&gt;;\)|&gt;:3|;3|&gt;:\]|"
+                + r":-###\.\.|:###\.\.")
+    neutral = (r":-O|:O|:-o|:o|:-0|8-0|&gt;|:-\||:\||:\$|:\/\/\)|:\/\/3|:-X|:X|"
+               + r":-#|:#|:-&|:&|&lt;:-\|',:-\||',:-l|%-\)|%\)|:E")
+    delete = r":-P|:P|X-P|XP|x-p|xp|:-p|:p|:-b|:b|d:|=p|&gt;:P"
+
+    # delete tweets with both positive and negative emoticons
+    pos_bool = df['tweet'].str.contains(positive, regex=True)
+    neg_bool = df['tweet'].str.contains(negative, regex=True)
+    pos_neg = pos_bool&neg_bool
+    df = df.loc[~pos_neg]
+
+    # delete tweets with variants of :P
+    delete_bool = df['tweet'].str.contains(delete, regex=True)
+    df = df.loc[~delete_bool]
+
+    # replace postive and negative emoticons
+    df = df.replace(to_replace=positive, value=' positive ', regex=True)
+    df = df.replace(to_replace=negative, value=' negative ', regex=True)
+
+    # remove neutral emoticons
+    df = df.replace(to_replace=neutral, value=' ', regex=True)
+
+    # convert all string to lowercase
+    df['tweet'] = df['tweet'].str.lower()
 
     # remove repeated tweets
     df = df.drop_duplicates()
 
-    # remove retweets
+    # delete retweets
     RT = df['tweet'].str.contains(r"\bRT @|\brt @|\bRt @", regex=True)
     df = df.loc[~RT]
 
-    # remove tweets containing both sad and smiley face
-    smile = df['tweet'].str.contains(r":\)|:-\)|: \)|:D|:-D|=\)|:\]",
-                                     regex=True)
-    sad = df['tweet'].str.contains(r":\(|:-\(|: \(|:\[", regex=True)
-    both = smile&sad
-    df = df.loc[~both]
 
+    # replace n't ending of words with not
+    df = df.replace(to_replace=r"can't|cannot", value=r"can not", regex=True)
+    df = df.replace(to_replace=r"won't", value=r"will not", regex=True)
+    df = df.replace(to_replace=r"([a-zA-Z]+)(n't)",
+                    value=r"\1 not",
+                    regex=True)
 
-    # tounge = df['tweet'].str.contains(r":P|:\|")
-    # df = df.loc[~tounge]
 
     # remove text
     url_reg = r"(http(?:s){0,1}://[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"\
@@ -38,7 +70,7 @@ def preprocessing(filename):
                                 r"&quot;", # quotation
                                 r"&gt;", # greater than >
                                 r"&lt;", # less than <
-                                r"[^a-zA-Z:\(\)\[\]=\-' ]", # special characters
+                                r"[^a-zA-Z-' ]", # special characters
                                 # r":\)|:-\)|: \)|:D|:-D|=\)|:\]|:\(|:-\(|: \(|:\[|;\)|xD|XD|:P|;P|8D|8\)|o.O|o.o|O.O|O.o",
                                 # r"[^a-zA-Z-' ]", # special characters
                                 r"\b[a-zA-Z]{1}\b"], # 1 and 2 char words
@@ -87,6 +119,8 @@ def preprocessing(filename):
     # lemmatized_tokens = tokens.apply(lambda x: [lemma.lemmatize(i) for i in x])
     # df['tweet'] = lemmatized_tokens.str.join(' ')
 
+    df.to_csv('../Data/data_trim_processed.csv')
+
     return df
 
 if __name__ == '__main__':
@@ -95,11 +129,12 @@ if __name__ == '__main__':
 
     data = preprocessing(filename)
     corpus = data['tweet']
-    labels = data['label']
+    # labels = data['label']
 
+    print(data)
     # create bag of words
-    vectorizer = CountVectorizer(min_df=5, max_df=0.99)
+    vectorizer = TfidfVectorizer(min_df=0.0, max_df=1.0)
     bow = vectorizer.fit_transform(corpus)
-
-    print(vectorizer.get_feature_names())
+    #
+    # print(vectorizer.get_feature_names())
     print(bow.shape)
