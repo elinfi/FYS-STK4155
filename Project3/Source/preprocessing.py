@@ -12,18 +12,26 @@ def preprocessing(filename):
     # df = df[:10]
     # df = pd.DataFrame({'tweet': [r":-) :-&gt; :L :S :-O", r"oiveroi:) jovnrs :-*:P", r"kverbx-Doinv joij ;D"], 'labels': [1, 2, 3]})
 
+    # replace url
+    url_reg = r"(http(?:s){0,1}://[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"\
+              + r"{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))"
+    df = df.replace(to_replace=url_reg, value=' URL ', regex=True)
+
+    # replace @Username
+    df = df.replace(to_replace=r"\@[\w_]*", value=' username ', regex=True)
 
     positive = (r":-\)|:\)|:-\]|:]|:-3|:3|:-&gt;|:&gt;|8-\)|8\)|:-\}|:\}|:o\)|"
                 + r":c\)|:\^\)|=\]|=\)|:-D|:D|8-D|8D|x-D|xD|X-D|XD|=D|=3|B\^D"
                 + r":'-\)|:'\)|:-\*|:\*|;-\)|;\)|\*-\)|\*\)|;-\]|;\]|;\^\)|:-,|"
-                + r";D")
+                + r";D|&lt;3+")
     negative = (r":-\(|:\(|:-c|:c|:-&lt;|:&lt;|:-\[|:\[|:-\|\||&gt;:\[|:\{|:@|"
                 + r";\(|:'-\(|:'\(|D-':|D:&lt;|D:|D8|D;|D=|:-\/|:\/|:-\.|"
                 + r"&gt;:\\|&gt;:\/|:\\|=\/|=\\|:L|=L|:S|&gt;:-\)|&gt;:\)|"
                 + r"\}:-\)|\}:\)|3:-\)|3:\)|&gt;;\)|&gt;:3|;3|&gt;:\]|"
-                + r":-###\.\.|:###\.\.")
+                + r":-###\.\.|:###\.\.|&lt;\/3+|&lt;\\3+")
     neutral = (r":-O|:O|:-o|:o|:-0|8-0|&gt;|:-\||:\||:\$|:\/\/\)|:\/\/3|:-X|:X|"
-               + r":-#|:#|:-&|:&|&lt;:-\|',:-\||',:-l|%-\)|%\)|:E")
+               + r":-#|:#|:-&|:&|&lt;:-\|',:-\||',:-l|%-\)|%\)|:E|O_O|o-o|O_o|"
+               + r"o_O|o_o|O-O|O\.o|O\.\O|o\.o|o\.O")
     delete = r":-P|:P|X-P|XP|x-p|xp|:-p|:p|:-b|:b|d:|=p|&gt;:P"
 
     # delete tweets with both positive and negative emoticons
@@ -63,11 +71,7 @@ def preprocessing(filename):
 
 
     # remove text
-    url_reg = r"(http(?:s){0,1}://[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"\
-              + r"{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))"
-    df = df.replace(to_replace=[r"\@[\w_]*", # @Username
-                                url_reg, # URL
-                                r"&quot;", # quotation
+    df = df.replace(to_replace=[r"&quot;", # quotation
                                 r"&gt;", # greater than >
                                 r"&lt;", # less than <
                                 r"[^a-zA-Z-' ]", # special characters
