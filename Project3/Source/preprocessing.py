@@ -31,7 +31,7 @@ def preprocessing(filename):
                 + r":-###\.\.|:###\.\.|&lt;\/3+|&lt;\\3+")
     neutral = (r":-O|:O|:-o|:o|:-0|8-0|&gt;|:-\||:\||:\$|:\/\/\)|:\/\/3|:-X|:X|"
                + r":-#|:#|:-&|:&|&lt;:-\|',:-\||',:-l|%-\)|%\)|:E|O_O|o-o|O_o|"
-               + r"o_O|o_o|O-O|O\.o|O\.\O|o\.o|o\.O")
+               + r"o_O|o_o|O-O|O\.o|O\.O|o\.o|o\.O")
     delete = r":-P|:P|X-P|XP|x-p|xp|:-p|:p|:-b|:b|d:|=p|&gt;:P"
 
     # delete tweets with both positive and negative emoticons
