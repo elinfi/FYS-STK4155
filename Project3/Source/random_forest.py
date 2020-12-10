@@ -9,7 +9,8 @@ from preprocessing import preprocessing
 
 # preprocessign of data
 filename = '../Data/data_trim.csv'
-data = preprocessing(filename)
+# data = preprocessing(filename)
+data = pd.read_csv(filename)
 corpus = data['tweet']
 labels = data['label']
 
