@@ -12,14 +12,20 @@ def preprocessing(filename):
     # df = df[:10]
     # df = pd.DataFrame({'tweet': [r":-) :-&gt; :L :S :-O", r"oiveroi:) jovnrs :-*:P", r"kverbx-Doinv joij ;D"], 'labels': [1, 2, 3]})
 
+    # delete retweets
+    RT = df['tweet'].str.contains(r"\bRT @|\brt @|\bRt @", regex=True)
+    df = df.loc[~RT]
+
     # replace url
     url_reg = r"(http(?:s){0,1}://[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"\
               + r"{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*))"
-    df = df.replace(to_replace=url_reg, value=' URL ', regex=True)
+    df = df.replace(to_replace=url_reg, value=' url ', regex=True)
 
     # replace @Username
-    df = df.replace(to_replace=r"\@[\w_]*", value=' username ', regex=True)
+    df = df.replace(to_replace=r"@[\w_]{1,15}\s", value=' username ',
+                    regex=True)
 
+    # regex for emoticons
     positive = (r":-\)|:\)|:-\]|:]|:-3|:3|:-&gt;|:&gt;|8-\)|8\)|:-\}|:\}|:o\)|"
                 + r":c\)|:\^\)|=\]|=\)|:-D|:D|8-D|8D|x-D|xD|X-D|XD|=D|=3|B\^D"
                 + r":'-\)|:'\)|:-\*|:\*|;-\)|;\)|\*-\)|\*\)|;-\]|;\]|;\^\)|:-,|"
@@ -57,11 +63,6 @@ def preprocessing(filename):
     # remove repeated tweets
     df = df.drop_duplicates()
 
-    # delete retweets
-    RT = df['tweet'].str.contains(r"\bRT @|\brt @|\bRt @", regex=True)
-    df = df.loc[~RT]
-
-
     # replace n't ending of words with not
     df = df.replace(to_replace=r"can't|cannot", value=r"can not", regex=True)
     df = df.replace(to_replace=r"won't", value=r"will not", regex=True)
@@ -69,47 +70,70 @@ def preprocessing(filename):
                     value=r"\1 not",
                     regex=True)
 
-
     # remove text
     df = df.replace(to_replace=[r"&quot;", # quotation
                                 r"&gt;", # greater than >
                                 r"&lt;", # less than <
+                                r"&amp;", # ampresand &
                                 r"[^a-zA-Z-' ]", # special characters
-                                # r":\)|:-\)|: \)|:D|:-D|=\)|:\]|:\(|:-\(|: \(|:\[|;\)|xD|XD|:P|;P|8D|8\)|o.O|o.o|O.O|O.o",
-                                # r"[^a-zA-Z-' ]", # special characters
                                 r"\b[a-zA-Z]{1}\b"], # 1 and 2 char words
-                    value=r"",
-                    regex=True)
-
-    df = df.replace(to_replace=r"&amp;", # ampresand &
                     value=r" ",
                     regex=True)
 
+    # replace repetitions of xoxo and haha
     df = df.replace(to_replace=r"(xo)(?:\1)+x{0,1}",
                     value=r"xoxo",
                     regex=True)
-
     df = df.replace(to_replace=r"(ha)(?:\1)+h{0,1}",
                     value=r"haha",
                     regex=True)
 
-    # df = df.replace(to_replace=r"(xo|ha)(?:\1)+[x|h]{0,1}", # xoxoxo...
-    #                 value=r"\1",
-    #                 regex=True)
-
-    # replace repeated characters with to repetitions
+    # replace repeated characters with two repetitions
     df = df.replace(to_replace=r"([a-zA-Z])(?:\1){2,}",
                     value=r"\1\1",
                     regex=True)
 
+    # replace negations with not
+    negation_list = ['ain', 'aint', 'aren', 'arent', "aren't", 'couldn',
+                     'couldnt', "couldn't", 'didn', 'didnt', "didn't", 'doesn',
+                     'doesnt', "doesn't", 'hadn', 'hadnt', "hadn't", 'hasn',
+                     'hasnt', "hasn't", 'haven', 'havent', "haven't", 'isn',
+                     'isnt', "isn't", 'mightn', "mightn't", 'mightnt', 'mustn',
+                     'mustnt', "mustn't", 'needn', 'neednt', "needn't", 'shan',
+                     'shant', "shan't", 'shouldn', 'shouldnt', "shouldn't",
+                     'wasn', 'wasnt', "wasn't", 'weren', 'werent', "weren't",
+                     'won', 'wont', "won't", 'wouldn', 'wouldnt', "wouldn't",
+                     'don', 'dont', "don't", 'cant', "can't", 'cannot',
+                     'darent', "daren't"]
+    negation_regex = r"\b{}\b".format(r'\b|\b'.join(negation_list))
+    df = df.replace(to_replace=negation_regex, value=r"not", regex=True)
+
     # remove stopwords
-    stopword = r"\b{}\b".format(r'\b|\b'.join(stopwords.words('english')))
-    df = df.replace(to_replace=stopword, value=r"", regex=True)
+    stopword_list = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours',
+                     'ourselves', 'you', "you're", "you've", "you'll", "you'd",
+                     'your', 'yours', 'yourself', 'yourselves', 'he', 'him',
+                     'his', 'himself', 'she', "she's", 'her', 'hers', 'herself',
+                     'it', "it's", 'its', 'itself', 'they', 'them', 'their',
+                     'theirs', 'themselves', 'what', 'which', 'who', 'whom',
+                     'this', 'that', "that'll", 'these', 'those', 'am', 'is',
+                     'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has',
+                     'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an',
+                     'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until',
+                     'while', 'of', 'at', 'by', 'for', 'with', 'about',
+                     'against', 'between', 'into', 'through', 'during',
+                     'before', 'after', 'above', 'below', 'to', 'from', 'up',
+                     'down', 'in', 'out', 'on', 'off', 'over', 'under', 'again',
+                     'further', 'then', 'once', 'here', 'there', 'when',
+                     'where', 'why', 'how', 'all', 'any', 'both', 'each', 'few',
+                     'more', 'most', 'other', 'some', 'such', 'only', 'own',
+                     'same', 'so', 'than', 'too', 'very', 's', 't', 'can',
+                     'will', 'just', 'should', "should've", 'now', 'd', 'll',
+                     'm', 'o', 're', 've', 'y', 'ma', 'could', 'need']
+    stopword_regex = r"\b{}\b".format(r'\b|\b'.join(stopword_list))
+    df = df.replace(to_replace=stopword_regex, value=r"", regex=True)
+
+    # remove all apostrophe
     df = df.replace(to_replace=r"'", value=r"", regex=True)
-    # hei = test.replace(to_replace=stopword, value=r"", regex=True)
-    # hei = hei.replace(to_replace=r"\b[\']\b", value=r"", regex=True)
-
-
 
     # tokenize data
     tokens = df['tweet'].str.split()
@@ -117,12 +141,15 @@ def preprocessing(filename):
     # remove suffixes from words
     stemmer = nltk.stem.SnowballStemmer("english")
     stemmed_tokens = tokens.apply(lambda x: [stemmer.stem(i) for i in x])
+
+    # join data
     df['tweet'] = stemmed_tokens.str.join(' ')
 
     # lemma = nltk.wordnet.WordNetLemmatizer()
     # lemmatized_tokens = tokens.apply(lambda x: [lemma.lemmatize(i) for i in x])
     # df['tweet'] = lemmatized_tokens.str.join(' ')
 
+    # write preprocessed data to file
     df.to_csv('../Data/data_trim_processed.csv')
 
     return df
