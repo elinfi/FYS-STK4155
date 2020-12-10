@@ -3,18 +3,18 @@ import nltk
 import pandas as pd
 
 from nltk.corpus import stopwords
-from spellchecker import SpellChecker
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 def preprocessing(filename):
-    df = pd.read_csv(filename, usecols=[1, 2])
-    # df = df[:10]
-    # df = pd.DataFrame({'tweet': [r":-) :-&gt; :L :S :-O", r"oiveroi:) jovnrs :-*:P", r"kverbx-Doinv joij ;D"], 'labels': [1, 2, 3]})
+    df = pd.read_csv(filename, usecols=['label', 'tweet'])
 
     # delete retweets
     RT = df['tweet'].str.contains(r"\bRT @|\brt @|\bRt @", regex=True)
     df = df.loc[~RT]
+
+    # remove repeated tweets
+    df = df.drop_duplicates()
 
     # replace url
     url_reg = r"(http(?:s){0,1}://[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]"\
@@ -60,23 +60,12 @@ def preprocessing(filename):
     # convert all string to lowercase
     df['tweet'] = df['tweet'].str.lower()
 
-    # remove repeated tweets
-    df = df.drop_duplicates()
-
-    # replace n't ending of words with not
-    df = df.replace(to_replace=r"can't|cannot", value=r"can not", regex=True)
-    df = df.replace(to_replace=r"won't", value=r"will not", regex=True)
-    df = df.replace(to_replace=r"([a-zA-Z]+)(n't)",
-                    value=r"\1 not",
-                    regex=True)
-
     # remove text
     df = df.replace(to_replace=[r"&quot;", # quotation
                                 r"&gt;", # greater than >
                                 r"&lt;", # less than <
                                 r"&amp;", # ampresand &
-                                r"[^a-zA-Z-' ]", # special characters
-                                r"\b[a-zA-Z]{1}\b"], # 1 and 2 char words
+                                r"[^a-zA-Z-' ]"], # special characters
                     value=r" ",
                     regex=True)
 
@@ -107,6 +96,7 @@ def preprocessing(filename):
                      'darent', "daren't"]
     negation_regex = r"\b{}\b".format(r'\b|\b'.join(negation_list))
     df = df.replace(to_replace=negation_regex, value=r"not", regex=True)
+    df = df.replace(to_replace=r"[a-zA-Z]+n't", value=r"not", regex=True)
 
     # remove stopwords
     stopword_list = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours',
