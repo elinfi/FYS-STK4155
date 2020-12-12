@@ -7,6 +7,15 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 
 def preprocessing(filename):
+    """
+    Data preprocessing of collection of tweets.
+
+    args:
+        filename(string) - filename of csv file containing labels and tweets
+
+    return:
+        df(DataFrame) - preprocessed data
+    """
     df = pd.read_csv(filename, usecols=['label', 'tweet'])
 
     # delete retweets
@@ -146,15 +155,17 @@ def preprocessing(filename):
 
 if __name__ == '__main__':
     filename = '../Data/data_trim.csv'
-    filename2 = '../archive/training.1600000.processed.noemoticon.csv'
+    filename2 = '../Data/data_trim_processed.csv'
 
-    data = preprocessing(filename)
-    corpus = data['tweet']
+
+    # data = preprocessing(filename)
+    df = pd.read_csv(filename, usecols=['label', 'tweet'])
+    corpus = df['tweet']
     # labels = data['label']
 
-    print(data)
+    print(df)
     # create bag of words
-    vectorizer = TfidfVectorizer(min_df=0.0, max_df=1.0)
+    vectorizer = TfidfVectorizer(min_df=1, max_df=1.0)
     bow = vectorizer.fit_transform(corpus)
     #
     # print(vectorizer.get_feature_names())
