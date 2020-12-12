@@ -1,4 +1,6 @@
 archive
+Source/test.py
+Source/logistic_regression.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/latex,windows,osx,python,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=latex,windows,osx,python,jupyternotebooks
