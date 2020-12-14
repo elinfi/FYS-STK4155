@@ -27,11 +27,11 @@ bow_train, bow_test, labels_train, labels_test = train_test_split(bow, labels,
                                                                   test_size=0.3)
 
 # AdaBoost
-eta = [0.9]
-train_acc = np.zeros(len(lmbda))
-test_acc = np.zeros(len(lmbda))
+eta = np.logspace(-1, 0, 15)
+train_acc = np.zeros(len(eta))
+test_acc = np.zeros(len(eta))
 
-for i in range(len(lmbda)):
+for i in range(len(eta)):
     ada_clf = AdaBoostClassifier(DecisionTreeClassifier(criterion='gini',
                                                         max_depth=1),
                                  n_estimators=100,
@@ -50,8 +50,8 @@ for i in range(len(lmbda)):
     print(train_acc)
 
 plt.style.use("ggplot")
-plt.plot(lmbda, test_acc, label='test')
-plt.plot(lmbda, train_acc, label='train')
+plt.plot(eta, test_acc, label='test')
+plt.plot(eta, train_acc, label='train')
 plt.title('AdaBoost', size=16)
 plt.xlabel('Learning rate', size=14)
 plt.ylabel('Accuracy score', size=14)
