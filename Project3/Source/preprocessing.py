@@ -144,10 +144,6 @@ def preprocessing(filename):
     # join data
     df['tweet'] = stemmed_tokens.str.join(' ')
 
-    # lemma = nltk.wordnet.WordNetLemmatizer()
-    # lemmatized_tokens = tokens.apply(lambda x: [lemma.lemmatize(i) for i in x])
-    # df['tweet'] = lemmatized_tokens.str.join(' ')
-
     # write preprocessed data to file
     df.to_csv('../Data/data_trim_processed.csv')
 
@@ -158,15 +154,11 @@ if __name__ == '__main__':
     filename2 = '../Data/data_trim_processed.csv'
 
 
-    # data = preprocessing(filename)
-    df = pd.read_csv(filename, usecols=['label', 'tweet'])
+    df = preprocessing(filename)
+    # df = pd.read_csv(filename, usecols=['label', 'tweet'])
     corpus = df['tweet']
-    # labels = data['label']
 
-    print(df)
     # create bag of words
-    vectorizer = TfidfVectorizer(min_df=1, max_df=1.0)
+    vectorizer = TfidfVectorizer(min_df=1, max_df=0.3)
     bow = vectorizer.fit_transform(corpus)
-    #
-    # print(vectorizer.get_feature_names())
     print(bow.shape)
