@@ -1,6 +1,8 @@
 archive
 Source/test.py
 Source/logistic_regression.py
+Data/data_trim_processed.csv
+Extra_figures
 
 # Created by https://www.toptal.com/developers/gitignore/api/latex,windows,osx,python,jupyternotebooks
 # Edit at https://www.toptal.com/developers/gitignore?templates=latex,windows,osx,python,jupyternotebooks
